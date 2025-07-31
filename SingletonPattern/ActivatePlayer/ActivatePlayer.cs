@@ -31,6 +31,6 @@ public class ActivatePlayer : MonoBehaviourPunCallbacks
         }
 
         //Finaliza o método Assíncrono
-        await Task.Delay(300); // Aguarda 0.5 Seg 
+        await Task.Delay(300); // Aguarda 0.3 Seg 
     }
 }

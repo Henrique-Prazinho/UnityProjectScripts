@@ -17,7 +17,8 @@ namespace PlayerManager
             "Gray",
             "White",
             "Pink",
-            "Blue"
+            "Blue",
+            "Brown"
         };
 
         void Awake()

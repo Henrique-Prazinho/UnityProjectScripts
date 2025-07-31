@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Photon.Pun;
 
 public class PhaseTwoController : BasePhaseController
@@ -14,9 +15,10 @@ public class PhaseTwoController : BasePhaseController
         PhotonNetwork.LoadLevel(PHASE_NAME); //Carrega a próxima cena ao concluir a sala
     }
 
-    private void Start()
+    private async void Start()
     {
-        Teleporter.Instance.RPCTeleportAllPlayersAsync();
+        await Task.Delay(500);
+        RestartGameController.Instance.ResetSceneMaster();
     }
 }
 

@@ -4,7 +4,7 @@ using UnityEngine;
 public class PlayerFreeMovement : MonoBehaviourPun
 {
     private Rigidbody2D _rb;
-    [SerializeField] private PlayerStatus status;
+    [SerializeField] private float planeSpeed;
 
     void Start()
     {
@@ -13,12 +13,11 @@ public class PlayerFreeMovement : MonoBehaviourPun
 
     void Update()
     {
-        if (photonView.IsMine)
-        {
-            float moveInputX = Input.GetAxis("Horizontal");
-            float moveInputY = Input.GetAxis("Vertical");
+        if (!photonView.IsMine) return;
+        
+        float moveInputX = Input.GetAxis("Horizontal");
+        float moveInputY = Input.GetAxis("Vertical");
 
-            _rb.linearVelocity = new Vector2(moveInputX * status.Speed, moveInputY * status.Speed);
-        }
+        _rb.linearVelocity = new Vector2(moveInputX * planeSpeed, moveInputY * planeSpeed);
     }
 }

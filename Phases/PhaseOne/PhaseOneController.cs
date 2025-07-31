@@ -9,7 +9,7 @@ public class PhaseOneController : BasePhaseController, IObserver
     [SerializeField] private Subject _buttonSubject;
     [SerializeField] private Subject _keySubject;
 
-    private const string PHASE_NAME = "Phase2";
+    private const string PHASE_NAME = "Phase3";
 
     //PISO
     [PunRPC]

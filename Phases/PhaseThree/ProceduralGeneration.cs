@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using Photon.Pun;
 
 public class ProceduralGeneration : MonoBehaviour
 {
@@ -11,17 +12,26 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] private int numberOfNikos;
 
     [Header("Objetos a serem instanciados")]
-    public GameObject cano;
-    public GameObject Niko;
+    [SerializeField] private GameObject cano;
+    [SerializeField] private GameObject niko;
+    [SerializeField] private GameObject finishLine;
+
+    [Header("Posição do Spawnpoint da linha de chegada")]
+    [SerializeField] private Transform finishLineSpawnpoint;
 
     [Header("Configuração dos objetos")]
     [SerializeField] private float heightRange;
     [SerializeField] private float gapBetweenObjects;
 
-    [Header("Aumento de velocidade dos objetos")]
+    [Header("Tempo para o evento de aumento de velocidade dos objetos")]
     [SerializeField] private float timeToIncreaseSpeed;
 
-    private float _time;
+    [Header("Duração do nível para instanciação da linha de chegada")]
+    [SerializeField] private float _levelTime; // Duração do nível para instanciação da linha de chegada
+
+    private bool finishLineAlreadyGenerated = false; // Flag de controle
+
+    private float _timeToRaiseEvent; // Intervalo de tempo em que o evento de aumento de velocidade é ativado
 
     public static event Action OnIncreaseSpeed;
 
@@ -31,7 +41,7 @@ public class ProceduralGeneration : MonoBehaviour
 
         for (int i = 0; i < numberOfPipes; i++)
         {
-            var objectHandle = Instantiate(cano, new Vector2(lastObjectCreated.transform.position.x + gapBetweenObjects, Random.Range(-heightRange, heightRange)), quaternion.identity);
+            var objectHandle = PhotonNetwork.Instantiate(cano.name, new Vector2(lastObjectCreated.transform.position.x + gapBetweenObjects, Random.Range(-heightRange, heightRange)), quaternion.identity);
             lastObjectCreated = objectHandle.transform;
         }
     }
@@ -40,26 +50,41 @@ public class ProceduralGeneration : MonoBehaviour
     {
         for (int i = 0; i < numberOfNikos; i++)
         {
-            var objectHandle = Instantiate(Niko, new Vector2(transform.position.x + gapBetweenObjects, Random.Range(-heightRange, heightRange)), quaternion.identity);
+            var objectHandle = PhotonNetwork.Instantiate(niko.name, new Vector2(transform.position.x + gapBetweenObjects, Random.Range(-heightRange, heightRange)), quaternion.identity);
             objectHandle.transform.localScale = new Vector3(Random.Range(0.5f, 2), Random.Range(0.5f, 2), 0f);
             await Task.Delay(3000);
         }
     }
 
+    private void GenerateFinishLine()
+    {
+        PhotonNetwork.Instantiate(nameof(finishLine), finishLineSpawnpoint.position, quaternion.identity);
+    }
+
     void Update()
     {
-        _time += Time.deltaTime;
+        if (!PhotonNetwork.IsMasterClient) return;
 
-        if (_time >= timeToIncreaseSpeed)
+        _timeToRaiseEvent += Time.deltaTime;
+        _levelTime -= Time.deltaTime;
+
+        if (_timeToRaiseEvent >= timeToIncreaseSpeed)
         {
             OnIncreaseSpeed?.Invoke();
-            _time = 0;
+            _timeToRaiseEvent = 0;
+        }
+
+        if (_levelTime <= 0 && !finishLineAlreadyGenerated)
+        {
+            finishLineAlreadyGenerated = true;
+            GenerateFinishLine();
         }
     }
 
     void Start()
     {
-        GeneratePipe();
-        GenerateNiko();
+        if (!PhotonNetwork.IsMasterClient) return;
+        GeneratePipe(); 
+        GenerateNiko(); 
     }
 }

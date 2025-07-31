@@ -12,11 +12,9 @@ public abstract class BasePhaseController : MonoBehaviourPunCallbacks
 
     protected virtual void Awake()
     {
-        if (PhotonNetwork.IsMasterClient)
-        {
-            //Eventos de delegate
-            Door.OnPlayerEnteredDoor += EnteredDoor;
-        }
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        Door.OnPlayerEnteredDoor += EnteredDoor;
     }
 
     //Método inscrito no delegate do script da porta que controla se todos jogadores entraram ou não
@@ -37,7 +35,6 @@ public abstract class BasePhaseController : MonoBehaviourPunCallbacks
         if (playersSet.Count == PhotonNetwork.CurrentRoom.PlayerCount && !NextLevelLoaded) //Se a quantidade de player que entrou na porta é o mesmo de players na sala
         {
             NextLevelLoaded = true;
-            Teleporter.Instance.photonView.RPC(nameof(Teleporter.RPCTeleportAllPlayersAsync), RpcTarget.All);
             LoadNextPhase(); //Chama o método implementado nas classes derivadas
         }
     }
@@ -48,7 +45,7 @@ public abstract class BasePhaseController : MonoBehaviourPunCallbacks
         GameObject player = PhotonView.Find(viewID)?.gameObject;
         player.SetActive(false); //Desativa o player que entrou na porta
     }
-    
+
     protected virtual void OnDestroy()
     {
         //Desinscreve ao reiniciar a cena, evitando que faça referência ao Action da cena antiga
